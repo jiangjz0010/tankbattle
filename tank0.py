@@ -145,7 +145,7 @@ class Mytank(Tank):
         pygame.display.update()
     def move(self):
         self.speed = 1
-        pygame.time.delay(25)
+        # pygame.time.delay(25)
         if self.direction == 'U' and self.notinwall():
             if self.rect.top - self.speed*23 >= 0:
                 self.rect.top -= self.speed*23
@@ -188,7 +188,7 @@ class Enemytank(Tank):
         pygame.display.update()
     def move(self):
         self.speed = 1
-        pygame.time.delay(35)
+        # pygame.time.delay(35)
         if self.direction == 'U' and self.notinwall():
             if self.rect.top - self.speed*23 >= 0:
                 self.rect.top -= self.speed*23
@@ -228,7 +228,7 @@ class Bullet():
             self.rect.left = left+46
             self.rect.top = top+18
     def move(self):
-        pygame.time.delay(17)
+        # pygame.time.delay(17)
         if self.ifexplode():
             MainGame.explode.displayExplode(self.rect.left,self.rect.top)
             MainGame.my_tank.ifbullet = False
