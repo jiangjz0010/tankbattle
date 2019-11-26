@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import pygame
 import time
+import random
 SCREEN_WIDTH = 23*26
 SCREEN_HEIGHT = 23*26
 BG_COLOR = pygame.Color(0,0,0)
@@ -25,18 +26,11 @@ class MainGame():
         iron_wall = iron()
         iron_wall.setwall(7,8,9,10)
         MainGame.explode = Explode()
-        set_enemytank(10,10)
-        set_enemytank(50,10)
-        set_enemytank(100,10)
-        set_enemytank(150,10)
-        set_enemytank(200,10)
-        set_enemytank(250,10)
-        set_enemytank(300,10)
-        set_enemytank(350,10)
-        set_enemytank(360,10)
-        set_enemytank(370,10)
+        set_enemytank(23*1,23*1)        
+        set_enemytank(23*3,23*1)        
+        set_enemytank(23*5,23*1)
         while True:
-            # time.sleep(0.0001)
+            # time.sleep(1)
             #给窗口填充色
             MainGame.window.fill(BG_COLOR)
             #获取事件
@@ -54,6 +48,7 @@ class MainGame():
             for i in MainGame.enemytank_list:
                 i.displayTank()
                 i.move()
+                i.changedirection()
             pygame.display.update()
     def EndGame(self):
         print('thank you for using')
@@ -117,6 +112,13 @@ class Tank():
                 return False
             else:
                 return True
+    def notinborder(self):
+        if self.rect.left == 0 or self.rect.left+46 == SCREEN_WIDTH or self.rect.top == 0 or self.rect.top+46 == SCREEN_HEIGHT:
+            return False
+        else:
+            return True
+    def notintank(self):
+        pass
 class Mytank(Tank):
     stop = True
     def __init__(self,left,top):
@@ -188,7 +190,6 @@ class Enemytank(Tank):
         pygame.display.update()
     def move(self):
         self.speed = 1
-        # pygame.time.delay(35)
         if self.direction == 'U' and self.notinwall():
             if self.rect.top - self.speed*23 >= 0:
                 self.rect.top -= self.speed*23
@@ -200,8 +201,19 @@ class Enemytank(Tank):
                 self.rect.left -= self.speed*23
         else:
             if self.notinwall():
-                if self.rect.left+self.rect.height+self.speed*23 <= SCREEN_WIDTH:
+                if self.rect.left+self.rect.width+self.speed*23 <= SCREEN_WIDTH:
                     self.rect.left += self.speed*23
+    def changedirection(self):
+        if not self.notinwall() or not self.notinborder():
+            flag = random.randint(0,3)
+            if flag == 0:
+                self.direction = 'U'
+            elif flag == 1:
+                self.direction = 'D'
+            elif flag == 2:
+                self.direction = 'L'
+            else:
+                self.direction = 'R'
 def set_enemytank(x,y):
     a = Enemytank(x,y)
     MainGame.enemytank_list.append(a)
@@ -228,7 +240,7 @@ class Bullet():
             self.rect.left = left+46
             self.rect.top = top+18
     def move(self):
-        # pygame.time.delay(17)
+        pygame.time.delay(17)
         if self.ifexplode():
             MainGame.explode.displayExplode(self.rect.left,self.rect.top)
             MainGame.my_tank.ifbullet = False
