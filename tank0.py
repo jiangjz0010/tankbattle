@@ -30,7 +30,7 @@ class MainGame():
         set_enemytank(23*3,23*1)        
         set_enemytank(23*5,23*1)
         while True:
-            # time.sleep(1)
+            time.sleep(0.05)
             #给窗口填充色
             MainGame.window.fill(BG_COLOR)
             #获取事件
@@ -45,10 +45,22 @@ class MainGame():
             if MainGame.my_tank.ifbullet:
                 MainGame.my_tank.bullet.displayBullet()
                 MainGame.my_tank.bullet.move()
+                if MainGame.my_tank.bullet.ifexplode():
+                    MainGame.explode.displayExplode(MainGame.my_tank.bullet.rect.left,MainGame.my_tank.bullet.rect.top)
+                    MainGame.my_tank.ifbullet = False
             for i in MainGame.enemytank_list:
                 i.displayTank()
                 i.move()
                 i.changedirection()
+                if not i.ifbullet:
+                    i.shot()
+                else:
+                    i.bullet.move()
+                    i.bullet.displayBullet()
+                    if i.bullet.ifexplode():
+                        MainGame.explode.displayExplode(i.bullet.rect.left,i.bullet.rect.top)
+                        i.ifbullet = False
+                        i.bullet = None
             pygame.display.update()
     def EndGame(self):
         print('thank you for using')
@@ -85,7 +97,10 @@ class Tank():
     def move(self):
         pass
     def shot(self):
-        pass
+        self.ifbullet = True
+        self.bullet = Bullet(self.direction,self.rect.left,self.rect.top)
+        MainGame.window.blit(self.bullet.image,self.rect)
+        pygame.display.update()
     def displayTank(self):
         #获取展示的对象
         self.image = self.images[self.direction]
@@ -140,28 +155,42 @@ class Mytank(Tank):
         #设置区域的left,top
         self.rect.left = left
         self.rect.top = top
-    def shot(self):
-        self.ifbullet = True
-        self.bullet = Bullet(self.direction,self.rect.left,self.rect.top)
-        MainGame.window.blit(self.bullet.image,self.rect)
-        pygame.display.update()
+    # def shot(self):
+    #     self.ifbullet = True
+    #     self.bullet = Bullet(self.direction,self.rect.left,self.rect.top)
+    #     MainGame.window.blit(self.bullet.image,self.rect)
+    #     pygame.display.update()
     def move(self):
         self.speed = 1
         # pygame.time.delay(25)
-        if self.direction == 'U' and self.notinwall():
+        if self.direction == 'U' and self.notinwall() and self.notintank():
             if self.rect.top - self.speed*23 >= 0:
                 self.rect.top -= self.speed*23
-        elif self.direction == 'D' and self.notinwall():
+        elif self.direction == 'D' and self.notinwall() and self.notintank():
             if self.rect.top+self.rect.height+self.speed*23 <= SCREEN_HEIGHT:
                 self.rect.top += self.speed*23
-        elif self.direction == 'L' and self.notinwall():
+        elif self.direction == 'L' and self.notinwall() and self.notintank():
             if self.rect.left-self.speed*23 >= 0:
                 self.rect.left -= self.speed*23
-        else:
+        elif self.direction == 'R' and self.notinwall() and self.notintank():
             if self.notinwall():
                 if self.rect.left+self.rect.height+self.speed*23 <= SCREEN_WIDTH:
                     self.rect.left += self.speed*23
-
+    def notintank(self):
+        for i in MainGame.enemytank_list:
+            if self.direction == 'U':
+                if (self.rect.left,self.rect.top-46) == (i.rect.left,i.rect.top) or (self.rect.left+23,self.rect.top-46) == (i.rect.left,i.rect.top) or (self.rect.left-23,self.rect.top-46) == (i.rect.left,i.rect.top):
+                    return False
+            elif self.direction == 'D':
+                if (self.rect.left,self.rect.top+46) == (i.rect.left,i.rect.top) or (self.rect.left-23,self.rect.top+46) == (i.rect.left,i.rect.top) or (self.rect.left+23,self.rect.top+46) == (i.rect.left,i.rect.top):
+                    return False
+            elif self.direction == 'L':
+                if (self.rect.left-46,self.rect.top) == (i.rect.left,i.rect.top) or (self.rect.left-46,self.rect.top+23) == (i.rect.left,i.rect.top) or (self.rect.left-46,self.rect.top-23) == (i.rect.left,i.rect.top):
+                   return False 
+            elif self.direction == 'R':
+                if (self.rect.left+46,self.rect.top) == (i.rect.left,i.rect.top) or (self.rect.left+46,self.rect.top-23) == (i.rect.left,i.rect.top) or (self.rect.left+46,self.rect.top+23) == (i.rect.left,i.rect.top):
+                    return False
+        return True
 class Enemytank(Tank):
     enemytank_placelist = []
     def __init__(self,left,top):
@@ -190,19 +219,18 @@ class Enemytank(Tank):
         pygame.display.update()
     def move(self):
         self.speed = 1
-        if self.direction == 'U' and self.notinwall():
+        if self.direction == 'U' and self.notinwall() and self.notintank():
             if self.rect.top - self.speed*23 >= 0:
                 self.rect.top -= self.speed*23
-        elif self.direction == 'D' and self.notinwall():
+        elif self.direction == 'D' and self.notinwall() and self.notintank():
             if self.rect.top+self.rect.height+self.speed*23 <= SCREEN_HEIGHT:
                 self.rect.top += self.speed*23
-        elif self.direction == 'L' and self.notinwall():
+        elif self.direction == 'L' and self.notinwall() and self.notintank():
             if self.rect.left-self.speed*23 >= 0:
                 self.rect.left -= self.speed*23
-        else:
-            if self.notinwall():
-                if self.rect.left+self.rect.width+self.speed*23 <= SCREEN_WIDTH:
-                    self.rect.left += self.speed*23
+        elif self.direction == 'R' and self.notinwall() and self.notintank():
+            if self.rect.left+self.rect.width+self.speed*23 <= SCREEN_WIDTH:
+                self.rect.left += self.speed*23
     def changedirection(self):
         if not self.notinwall() or not self.notinborder():
             flag = random.randint(0,3)
@@ -214,6 +242,38 @@ class Enemytank(Tank):
                 self.direction = 'L'
             else:
                 self.direction = 'R'
+    def notintank(self):
+        for i in MainGame.enemytank_list:
+            if self != i :
+                if self.direction == 'U':
+                    if (self.rect.left,self.rect.top-46) == (i.rect.left,i.rect.top) or (self.rect.left+23,self.rect.top-46) == (i.rect.left,i.rect.top) or (self.rect.left-23,self.rect.top-46) == (i.rect.left,i.rect.top):
+                        self.direction = 'D'
+                        return False
+                elif self.direction == 'D':
+                        if (self.rect.left,self.rect.top+46) == (i.rect.left,i.rect.top) or (self.rect.left-23,self.rect.top+46) == (i.rect.left,i.rect.top) or (self.rect.left+23,self.rect.top+46) == (i.rect.left,i.rect.top):
+                            self.direction = 'U'
+                            return False
+                elif self.direction == 'L':
+                        if (self.rect.left-46,self.rect.top) == (i.rect.left,i.rect.top) or (self.rect.left-46,self.rect.top+23) == (i.rect.left,i.rect.top) or (self.rect.left-46,self.rect.top-23) == (i.rect.left,i.rect.top):
+                            self.direction = 'R'
+                            return False 
+                elif self.direction == 'R':
+                        if (self.rect.left+46,self.rect.top) == (i.rect.left,i.rect.top) or (self.rect.left+46,self.rect.top-23) == (i.rect.left,i.rect.top) or (self.rect.left+46,self.rect.top+23) == (i.rect.left,i.rect.top):
+                            self.direction = 'L'
+                            return False
+        if self.direction == 'U':
+            if (self.rect.left,self.rect.top-46) == (MainGame.my_tank.rect.left,MainGame.my_tank.rect.top) or (self.rect.left+23,self.rect.top-46) == (MainGame.my_tank.rect.left,MainGame.my_tank.rect.top) or (self.rect.left-23,self.rect.top-46) == (MainGame.my_tank.rect.left,MainGame.my_tank.rect.top):
+                return False
+        elif self.direction == 'D':
+            if (self.rect.left,self.rect.top+46) == (MainGame.my_tank.rect.left,MainGame.my_tank.rect.top) or (self.rect.left-23,self.rect.top+46) == (MainGame.my_tank.rect.left,MainGame.my_tank.rect.top) or (self.rect.left+23,self.rect.top+46) == (MainGame.my_tank.rect.left,MainGame.my_tank.rect.top):
+                return False
+        elif self.direction == 'L':
+            if (self.rect.left-46,self.rect.top) == (MainGame.my_tank.rect.left,MainGame.my_tank.rect.top) or (self.rect.left-46,self.rect.top+23) == (MainGame.my_tank.rect.left,MainGame.my_tank.rect.top) or (self.rect.left-46,self.rect.top-23) == (MainGame.my_tank.rect.left,MainGame.my_tank.rect.top):
+                return False
+        elif self.direction == 'R':
+            if (self.rect.left+46,self.rect.top) == (MainGame.my_tank.rect.left,MainGame.my_tank.rect.top) or (self.rect.left+46,self.rect.top-23) == (MainGame.my_tank.rect.left,MainGame.my_tank.rect.top) or (self.rect.left+46,self.rect.top+23) == (MainGame.my_tank.rect.left,MainGame.my_tank.rect.top):
+                return False
+        return True
 def set_enemytank(x,y):
     a = Enemytank(x,y)
     MainGame.enemytank_list.append(a)
@@ -240,18 +300,14 @@ class Bullet():
             self.rect.left = left+46
             self.rect.top = top+18
     def move(self):
-        pygame.time.delay(17)
-        if self.ifexplode():
-            MainGame.explode.displayExplode(self.rect.left,self.rect.top)
-            MainGame.my_tank.ifbullet = False
         if self.direction == 'U':
-            self.rect.top -=23
+            self.rect.top -= 69
         elif self.direction == 'D':
-            self.rect.top +=23
+            self.rect.top += 69
         elif self.direction == 'L':
-            self.rect.left -= 23
+            self.rect.left -= 69
         else:
-            self.rect.left += 23
+            self.rect.left += 69
     def displayBullet(self):
         MainGame.window.blit(self.image,self.rect)
     def ifexplode(self):
@@ -323,7 +379,7 @@ class Explode():
             self.rect.top = top
         MainGame.window.blit(self.image,self.rect)
         pygame.display.update()
-        pygame.time.delay(40)
+        # pygame.time.delay(40)
 class wood(Wall):
     woodplace_list = []
     def setwall(self,x0,y0,x1,y1):
