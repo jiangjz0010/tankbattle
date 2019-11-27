@@ -48,6 +48,7 @@ class MainGame():
                 if MainGame.my_tank.bullet.ifexplode():
                     MainGame.explode.displayExplode(MainGame.my_tank.bullet.rect.left,MainGame.my_tank.bullet.rect.top)
                     MainGame.my_tank.ifbullet = False
+                MainGame.my_tank.bulletattacktank()
             for i in MainGame.enemytank_list:
                 i.displayTank()
                 i.move()
@@ -57,12 +58,16 @@ class MainGame():
                 else:
                     i.bullet.move()
                     i.bullet.displayBullet()
+                    if i.bulletattacktank():
+                        pygame.event.get()
+                        time.sleep(5)
+                        MainGame.EndGame()
                     if i.bullet.ifexplode():
                         MainGame.explode.displayExplode(i.bullet.rect.left,i.bullet.rect.top)
                         i.ifbullet = False
                         i.bullet = None
             pygame.display.update()
-    def EndGame(self):
+    def EndGame():
         print('thank you for using')
         exit()
     def getEvent(self):
@@ -71,7 +76,7 @@ class MainGame():
         for event in eventList:
             #判断按下的是键盘还是关关闭
             if event.type == pygame.QUIT:
-                self.EndGame()
+                MainGame.EndGame()
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_LEFT:
                     MainGame.my_tank.direction = 'L'
@@ -155,14 +160,8 @@ class Mytank(Tank):
         #设置区域的left,top
         self.rect.left = left
         self.rect.top = top
-    # def shot(self):
-    #     self.ifbullet = True
-    #     self.bullet = Bullet(self.direction,self.rect.left,self.rect.top)
-    #     MainGame.window.blit(self.bullet.image,self.rect)
-    #     pygame.display.update()
     def move(self):
         self.speed = 1
-        # pygame.time.delay(25)
         if self.direction == 'U' and self.notinwall() and self.notintank():
             if self.rect.top - self.speed*23 >= 0:
                 self.rect.top -= self.speed*23
@@ -191,6 +190,21 @@ class Mytank(Tank):
                 if (self.rect.left+46,self.rect.top) == (i.rect.left,i.rect.top) or (self.rect.left+46,self.rect.top-23) == (i.rect.left,i.rect.top) or (self.rect.left+46,self.rect.top+23) == (i.rect.left,i.rect.top):
                     return False
         return True
+    def bulletattacktank(self):
+        if self.ifbullet == True:
+            for i in MainGame.enemytank_list:
+                if self.bullet.direction == 'U':
+                    if (self.bullet.rect.left-18,self.bullet.rect.top-46) == (i.rect.left,i.rect.top):
+                        MainGame.enemytank_list.remove(i)
+                elif self.bullet.direction == 'D':
+                    if (self.bullet.rect.left-18,self.bullet.rect.top+46) == (i.rect.left,i.rect.top):
+                        MainGame.enemytank_list.remove(i)
+                elif self.bullet.direction == 'L':
+                    if (self.bullet.rect.left-46,self.bullet.rect.top-18) == (i.rect.left,i.rect.top):
+                        MainGame.enemytank_list.remove(i)
+                elif self.bullet.direction == 'R':
+                    if (self.bullet.rect.left+46,self.bullet.rect.top-18) == (i.rect.left,i.rect.top):
+                        MainGame.enemytank_list.remove(i)
 class Enemytank(Tank):
     enemytank_placelist = []
     def __init__(self,left,top):
@@ -274,6 +288,31 @@ class Enemytank(Tank):
             if (self.rect.left+46,self.rect.top) == (MainGame.my_tank.rect.left,MainGame.my_tank.rect.top) or (self.rect.left+46,self.rect.top-23) == (MainGame.my_tank.rect.left,MainGame.my_tank.rect.top) or (self.rect.left+46,self.rect.top+23) == (MainGame.my_tank.rect.left,MainGame.my_tank.rect.top):
                 return False
         return True
+    def bulletattacktank(self):
+        if self.bullet.direction == 'U':
+            if (self.bullet.rect.left-18,self.bullet.rect.top-23) == (MainGame.my_tank.rect.left,MainGame.my_tank.rect.top):
+                gameover = pygame.image.load('90/over.png')
+                MainGame.window.blit(gameover,(23*6,23*6))
+                pygame.display.flip()
+                return True
+        elif self.bullet.direction == 'D':
+            if (self.bullet.rect.left-18,self.bullet.rect.top) == (MainGame.my_tank.rect.left,MainGame.my_tank.rect.top):
+                gameover = pygame.image.load('90/over.png')
+                MainGame.window.blit(gameover,(23*7,23*8))
+                pygame.display.flip()
+                return True
+        elif self.bullet.direction == 'L':
+            if (self.bullet.rect.left-23,self.bullet.rect.top-18) == (MainGame.my_tank.rect.left,MainGame.my_tank.rect.top):
+                gameover = pygame.image.load('90/over.png')
+                MainGame.window.blit(gameover,(23*6,23*6))
+                pygame.display.flip()
+                return True
+        elif self.bullet.direction == 'R':
+            if (self.bullet.rect.left+23,self.bullet.rect.top-18) == (MainGame.my_tank.rect.left,MainGame.my_tank.rect.top):
+                gameover = pygame.image.load('90/over.png')
+                MainGame.window.blit(gameover,(23*4,23*5))
+                pygame.display.flip()
+                return True
 def set_enemytank(x,y):
     a = Enemytank(x,y)
     MainGame.enemytank_list.append(a)
@@ -301,13 +340,13 @@ class Bullet():
             self.rect.top = top+18
     def move(self):
         if self.direction == 'U':
-            self.rect.top -= 69
+            self.rect.top -= 23
         elif self.direction == 'D':
-            self.rect.top += 69
+            self.rect.top += 23
         elif self.direction == 'L':
-            self.rect.left -= 69
+            self.rect.left -= 23
         else:
-            self.rect.left += 69
+            self.rect.left += 23
     def displayBullet(self):
         MainGame.window.blit(self.image,self.rect)
     def ifexplode(self):
