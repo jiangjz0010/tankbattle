@@ -30,7 +30,7 @@ class MainGame():
         set_enemytank(23*3,23*1)        
         set_enemytank(23*5,23*1)
         while True:
-            time.sleep(0.05)
+            time.sleep(0.1)
             #给窗口填充色
             MainGame.window.fill(BG_COLOR)
             #获取事件
@@ -45,9 +45,11 @@ class MainGame():
             if MainGame.my_tank.ifbullet:
                 MainGame.my_tank.bullet.displayBullet()
                 MainGame.my_tank.bullet.move()
+                MainGame.my_tank.bullet.move()
                 if MainGame.my_tank.bullet.ifexplode():
                     MainGame.explode.displayExplode(MainGame.my_tank.bullet.rect.left,MainGame.my_tank.bullet.rect.top)
                     MainGame.my_tank.ifbullet = False
+                MainGame.my_tank.bullettouchbullet()     
                 MainGame.my_tank.bulletattacktank()
             for i in MainGame.enemytank_list:
                 i.displayTank()
@@ -56,6 +58,7 @@ class MainGame():
                 if not i.ifbullet:
                     i.shot()
                 else:
+                    i.bullet.move()
                     i.bullet.move()
                     i.bullet.displayBullet()
                     if i.bulletattacktank():
@@ -205,18 +208,45 @@ class Mytank(Tank):
                 elif self.bullet.direction == 'R':
                     if (self.bullet.rect.left+46,self.bullet.rect.top-18) == (i.rect.left,i.rect.top):
                         MainGame.enemytank_list.remove(i)
+    def bullettouchbullet(self):
+        if self.ifbullet == True:
+            for i in MainGame.enemytank_list:
+                if i.ifbullet == True:
+                    if self.bullet == i.bullet:
+                        self.bullet.displayExplode()
+                        self.ifbullet = False
+                        i.ifbullet = False
 class Enemytank(Tank):
     enemytank_placelist = []
     def __init__(self,left,top):
         self.bullet = None
         self.ifbullet = False
         #保存加载的图片
-        self.images = {
+        self.images1 = {
             'U':pygame.image.load("90/enemybf00.png"),
             'D':pygame.image.load("90/enemybb00.png"),
             'L':pygame.image.load("90/enemybl00.png"),
             'R':pygame.image.load("90/enemybr00.png"),
             }
+        self.images2 = {
+            'U':pygame.image.load("90/enemydf10.png"),
+            'D':pygame.image.load("90/enemydb10.png"),
+            'L':pygame.image.load("90/enemydl00.png"),
+            'R':pygame.image.load("90/enemydr00.png"),
+            }
+        self.images3 = {
+            'U':pygame.image.load("90/enemydf30.png"),
+            'D':pygame.image.load("90/enemydb30.png"),
+            'L':pygame.image.load("90/enemydl30.png"),
+            'R':pygame.image.load("90/enemydr30.png"),
+            }
+        choceimage = random.randint(1,3)
+        if choceimage == 1:
+            self.images = self.images1
+        elif choceimage == 2:
+            self.images= self.images2
+        elif choceimage == 3:
+            self.images  = self.images3  
         #方向
         self.direction = 'D'
         #根据方向获取图片
