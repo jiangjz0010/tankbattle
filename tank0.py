@@ -22,17 +22,38 @@ class MainGame():
         #初始化我方坦克
         MainGame.my_tank = Mytank(23*8,23*24)
         wood_wall = wood() #设置墙
-        wood_wall.setwall(5,5,6,6)
+        wood_wall.setwall(1,3,2,10)
+        wood_wall.setwall(5,3,6,10)
+        wood_wall.setwall(11,3,12,10)
+        wood_wall.setwall(17,3,18,10)
+        wood_wall.setwall(23,3,24,10)
+        wood_wall.setwall(2,13,3,23)
+        wood_wall.setwall(6,13,7,20)
+        wood_wall.setwall(10,13,11,20)
+        wood_wall.setwall(11,15,14,16)
+        wood_wall.setwall(14,13,15,20)
+        wood_wall.setwall(18,13,19,20)
+        wood_wall.setwall(22,13,23,23)
+        # wood_wall.setwall(10,23,10,26)
+        # wood_wall.setwall(11,23,14,23)
+        # wood_wall.setwall(14,23,14,26)
         iron_wall = iron()
-        iron_wall.setwall(7,8,9,10)
+        iron_wall.setwall(14,8,15,9)
+        iron_wall.setwall(0,13,1,13)
+        iron_wall.setwall(24,13,26,13)
+        iron_wall.setwall(10,23,10,26)
+        iron_wall.setwall(11,23,14,23)
+        iron_wall.setwall(14,23,14,26)
         MainGame.explode = Explode()
         set_enemytank(23*1,23*1)        
         set_enemytank(23*3,23*1)        
         set_enemytank(23*5,23*1)
         while True:
             time.sleep(0.1)
+            image = pygame.image.load("90/bird.jpg")
             #给窗口填充色
             MainGame.window.fill(BG_COLOR)
+            MainGame.bird()
             #获取事件
             self.getEvent()
             #调用坦克显示的方法
@@ -73,6 +94,9 @@ class MainGame():
     def EndGame():
         print('thank you for using')
         exit()
+    def bird():
+        image = pygame.image.load("90/bird.jpg")
+        MainGame.window.blit(image,(23*11.5,23*24))
     def getEvent(self):
         eventList = pygame.event.get()
         #遍历事件
@@ -231,8 +255,8 @@ class Enemytank(Tank):
         self.images2 = {
             'U':pygame.image.load("90/enemydf10.png"),
             'D':pygame.image.load("90/enemydb10.png"),
-            'L':pygame.image.load("90/enemydl00.png"),
-            'R':pygame.image.load("90/enemydr00.png"),
+            'L':pygame.image.load("90/enemydl10.png"),
+            'R':pygame.image.load("90/enemydr10.png"),
             }
         self.images3 = {
             'U':pygame.image.load("90/enemydf30.png"),
